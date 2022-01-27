@@ -34,19 +34,19 @@ const (
 	LF = "\n"
 )
 
-type ApiGateway struct {
+type APIGateway struct {
 	Key    string
 	Secret string
 }
 
-func NewAPIGateway(key, secret string) *ApiGateway {
-	return &ApiGateway{
+func NewAPIGateway(key, secret string) *APIGateway {
+	return &APIGateway{
 		Key:    key,
 		Secret: secret,
 	}
 }
 
-func (api *ApiGateway) Sign(req *http.Request) error {
+func (api *APIGateway) Sign(req *http.Request) error {
 	t := time.Now().UnixNano()
 	req.Header.Set(HTTPHeaderCATimestamp, strconv.FormatInt(t/1000000, 10))
 	req.Header.Set(HTTPHeaderCANonce, strconv.FormatInt(t, 10))
@@ -62,13 +62,13 @@ func (api *ApiGateway) Sign(req *http.Request) error {
 	return nil
 }
 
-func (api *ApiGateway) sha256Hmac(b []byte) string {
+func (api *APIGateway) sha256Hmac(b []byte) string {
 	h := hmac.New(sha256.New, []byte(api.Secret))
 	h.Write(b)
 	return base64.StdEncoding.EncodeToString(h.Sum([]byte{}))
 }
 
-func (api *ApiGateway) buildSignature(req *http.Request) (string, []string, error) {
+func (api *APIGateway) buildSignature(req *http.Request) (string, []string, error) {
 	var buf strings.Builder
 
 	buf.WriteString(strings.ToUpper(req.Method))
@@ -97,7 +97,7 @@ func (api *ApiGateway) buildSignature(req *http.Request) (string, []string, erro
 	return buf.String(), signatureHeaders, nil
 }
 
-func (api *ApiGateway) buildHeader(header http.Header) (string, []string, error) {
+func (api *APIGateway) buildHeader(header http.Header) (string, []string, error) {
 	signatureHeaders := make([]string, 0)
 	var buf strings.Builder
 	for _, k := range sortedKeys(url.Values(header)) {
@@ -112,7 +112,7 @@ func (api *ApiGateway) buildHeader(header http.Header) (string, []string, error)
 	return buf.String(), signatureHeaders, nil
 }
 
-func (api *ApiGateway) buildPath(req *http.Request) (string, error) {
+func (api *APIGateway) buildPath(req *http.Request) (string, error) {
 	data := make(url.Values)
 	for k, v := range req.URL.Query() {
 		data[k] = make([]string, 0)
