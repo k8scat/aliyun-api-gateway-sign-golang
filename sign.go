@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"net/url"
 	"sort"
@@ -39,11 +40,14 @@ type APIGateway struct {
 	Secret string
 }
 
-func NewAPIGateway(key, secret string) *APIGateway {
+func NewAPIGateway(key, secret string) (*APIGateway, error) {
+	if key == "" || secret == "" {
+		return nil, errors.New("missing key or secret")
+	}
 	return &APIGateway{
 		Key:    key,
 		Secret: secret,
-	}
+	}, nil
 }
 
 func (api *APIGateway) Sign(req *http.Request) error {
